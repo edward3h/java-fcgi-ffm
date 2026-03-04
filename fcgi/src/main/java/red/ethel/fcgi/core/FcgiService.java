@@ -21,7 +21,7 @@ public final class FcgiService extends BaseService implements Service {
         if (wrapper.isCGI()) {
             try {
                 wrapper.close();
-            } catch (Exception e) {
+            } catch (Exception _) {
                 // ignore
             }
             return new CgiService();
@@ -52,7 +52,7 @@ public final class FcgiService extends BaseService implements Service {
                     }
                 });
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             LOGGER.debug("interrupted");
         }
     }

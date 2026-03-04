@@ -71,7 +71,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
         thread.interrupt();
         try {
             thread.join(TimeUnit.SECONDS.toMillis(delay));
-        } catch (InterruptedException e) {
+        } catch (InterruptedException _) {
             // it's fine, just give up
         }
     }
