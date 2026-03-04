@@ -1,0 +1,5 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: red.ethel.fcgi.General
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava25
