@@ -3,3 +3,5 @@ type: specs.openrewrite.org/v1beta/recipe
 name: red.ethel.fcgi.General
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava25
+  - org.openrewrite.java.logging.slf4j.ParameterizedLogging
+  - org.openrewrite.staticanalysis.CommonStaticAnalysis

@@ -31,7 +31,7 @@ final class FCGIHttpExchange extends HttpExchange {
     private int statusCode = -1;
     private final Headers requestHeaders;
     private final Headers responseHeaders = new Headers();
-    private boolean sentHeaders = false;
+    private boolean sentHeaders;
 
     public FCGIHttpExchange(FCGIExchange fcgiExchange, ContextImpl context) {
         this.fcgiExchange = fcgiExchange;

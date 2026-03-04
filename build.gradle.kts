@@ -18,6 +18,7 @@ dependencies {
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:3.24.0"))
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
     rewrite("org.openrewrite.recipe:rewrite-logging-frameworks")
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis")
 }
 
 rewrite {
