@@ -5,7 +5,6 @@ buildscript {
     }
 }
 
-///* TODO there's a bug with rewrite that I haven't looked into yet
 plugins {
     id("org.openrewrite.rewrite") version "7.26.0"
 }
@@ -25,5 +24,3 @@ rewrite {
     activeRecipe("red.ethel.fcgi.General")
     isExportDatatables = true
 }
-
-// */
