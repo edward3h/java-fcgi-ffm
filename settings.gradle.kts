@@ -4,5 +4,11 @@ plugins {
 }
 
 rootProject.name = "java-fcgi-ffm"
-include("fcgi", "httpserver")
+include(
+    "fcgi",
+    "httpserver",
+    "test-httpserver",
+    "test-rgconfig",
+    "test-jex"
+)
 apply(from = "catalog.settings.gradle.kts")

@@ -6,6 +6,7 @@ buildscript {
 }
 
 plugins {
+    base
     id("org.openrewrite.rewrite") version "7.26.0"
 }
 
@@ -23,4 +24,8 @@ dependencies {
 rewrite {
     activeRecipe("red.ethel.fcgi.General")
     isExportDatatables = true
+}
+
+tasks.named("check") {
+    dependsOn(tasks.named("rewriteDryRun"))
 }
