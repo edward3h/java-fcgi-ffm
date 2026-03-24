@@ -18,7 +18,7 @@ final class CgiService extends BaseService implements Service {
 
     @Override
     public void close() {
-        // no-op
+        System.out.flush();
     }
 
     @Override

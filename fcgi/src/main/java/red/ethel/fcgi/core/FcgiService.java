@@ -2,6 +2,7 @@
 package red.ethel.fcgi.core;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ public final class FcgiService extends BaseService implements Service {
         try {
 
             while (true) {
+                LOGGER.debug("worker loop head");
                 acceptOne.acquire();
                 executor.execute(() -> {
                     LOGGER.debug("Worker.run enter");
@@ -46,7 +48,7 @@ public final class FcgiService extends BaseService implements Service {
                         handler.handle(request.exchange());
                         LOGGER.debug("handle exit");
                     } catch (Throwable e) {
-                        LOGGER.debug("Exception in worker thread", e);
+                        LOGGER.error("Exception in worker thread", e);
                     } finally {
                         LOGGER.debug("Worker.run exit");
                     }
@@ -65,6 +67,6 @@ public final class FcgiService extends BaseService implements Service {
     @Override
     protected Executor defaultExecutor() {
         ThreadFactory factory = Thread.ofVirtual().name("worker", 1).factory();
-        return factory::newThread;
+        return Executors.newThreadPerTaskExecutor(factory);
     }
 }

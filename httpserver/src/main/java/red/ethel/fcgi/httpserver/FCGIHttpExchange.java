@@ -8,20 +8,25 @@ import com.sun.net.httpserver.HttpPrincipal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import red.ethel.fcgi.core.FCGIExchange;
 
 final class FCGIHttpExchange extends HttpExchange {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FCGIHttpExchange.class);
+
     private final FCGIExchange fcgiExchange;
     private final ContextImpl context;
     private InputStream useInput;
@@ -71,7 +76,7 @@ final class FCGIHttpExchange extends HttpExchange {
 
     @Override
     public String getRequestMethod() {
-        return fcgiExchange.env().getOrDefault("REQUEST_METHOD", "GET");
+        return fcgiExchange.env().getOrDefault("REQUEST_METHOD", "GET").strip().toUpperCase();
     }
 
     @Override
@@ -89,7 +94,7 @@ final class FCGIHttpExchange extends HttpExchange {
 
     @Override
     public OutputStream getResponseBody() {
-        return useOutput;
+        return deferredOutputStream;
     }
 
     @Override
@@ -100,10 +105,26 @@ final class FCGIHttpExchange extends HttpExchange {
         sentHeaders = true;
         statusCode = rCode;
         responseHeaders.put("Status", List.of(String.valueOf(statusCode)));
-        var ps = new PrintStream(fcgiExchange.out());
-        responseHeaders.forEach((k, v) -> ps.printf("%s: %s%n", k, String.join("; ", v)));
-        ps.println();
-        deferredOutputStream.setDelegate(fcgiExchange.out());
+        LOGGER.debug("headers {}", responseHeaders);
+        var out = fcgiExchange.out();
+
+        responseHeaders.forEach((k, v) -> {
+            try {
+                out.write(k.getBytes(StandardCharsets.UTF_8));
+                out.write(": ".getBytes(StandardCharsets.UTF_8));
+                out.write(v.getFirst().getBytes(StandardCharsets.UTF_8));
+                out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        try {
+            out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        LOGGER.debug("printed headers");
+        deferredOutputStream.setDelegate(out);
     }
 
     @Override
@@ -208,12 +229,12 @@ final class FCGIHttpExchange extends HttpExchange {
             delegate.close();
         }
 
-        @Override
-        public void flush() throws IOException {
-            if (delegate == null) {
-                throw new IllegalStateException("Cannot write response before calling sendResponseHeaders");
-            }
-            delegate.flush();
-        }
+        //        @Override
+        //        public void flush() throws IOException {
+        //            if (delegate == null) {
+        //                throw new IllegalStateException("Cannot write response before calling sendResponseHeaders");
+        //            }
+        //            delegate.flush();
+        //        }
     }
 }

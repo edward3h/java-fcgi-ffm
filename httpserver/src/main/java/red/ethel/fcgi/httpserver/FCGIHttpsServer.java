@@ -12,12 +12,16 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import red.ethel.fcgi.core.FCGIExchange;
 import red.ethel.fcgi.core.FcgiService;
 import red.ethel.fcgi.core.Handler;
 import red.ethel.fcgi.core.Service;
 
 final class FCGIHttpsServer extends HttpsServer implements Handler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FCGIHttpsServer.class);
+
     private final Service coreService = FcgiService.create();
     private final ContextList contextList = new ContextList();
     private @Nullable Thread serviceThread;
@@ -39,14 +43,17 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
 
     @Override
     public void start() {
-        Thread thread;
-        synchronized (this) {
-            if (serviceThread != null) {
-                throw new IllegalStateException("Server already started");
-            }
-            thread = serviceThread = Thread.ofVirtual().name("httpserver").unstarted(() -> coreService.serve(this));
-        }
-        thread.start();
+        //        Thread thread;
+        //        synchronized (this) {
+        //            if (serviceThread != null) {
+        //                throw new IllegalStateException("Server already started");
+        //            }
+        //            thread = serviceThread = Thread.ofVirtual().name("httpserver").unstarted(() ->
+        // coreService.serve(this));
+        //        }
+        //        thread.start();
+        serviceThread = Thread.currentThread();
+        coreService.serve(this);
     }
 
     @Override
@@ -61,6 +68,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
 
     @Override
     public void stop(int delay) {
+        LOGGER.debug("stop requested");
         Thread thread;
         synchronized (this) {
             if (serviceThread == null) {
@@ -74,6 +82,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
         } catch (InterruptedException _) {
             // it's fine, just give up
         }
+        LOGGER.debug("stopped");
     }
 
     @Override
@@ -103,6 +112,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
 
     @Override
     public void handle(FCGIExchange exchange) {
+        LOGGER.debug("handle enter");
         var path = exchange.env().get("SCRIPT_URL");
         var context = path == null ? null : contextList.findContext(path);
         if (context != null && context.getHandler() != null) {
@@ -114,6 +124,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
         } else {
             handleError(404, exchange);
         }
+        LOGGER.debug("handle exit");
     }
 
     private void handleError(int statusCode, FCGIExchange exchange) {

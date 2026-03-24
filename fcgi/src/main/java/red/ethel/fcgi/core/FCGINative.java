@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +27,8 @@ import org.slf4j.LoggerFactory;
 ///
 /// Hand-written because I was running into issues with *jExtract*.
 final class FCGINative implements AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FCGINative.class);
+
     public static final ValueLayout.OfByte C_CHAR =
             (ValueLayout.OfByte) Linker.nativeLinker().canonicalLayouts().get("char");
     public static final ValueLayout.OfInt C_INT =
@@ -54,7 +55,6 @@ final class FCGINative implements AutoCloseable {
             .withName("FCGX_Request");
     public static final ValueLayout.OfLong C_LONG =
             (ValueLayout.OfLong) Linker.nativeLinker().canonicalLayouts().get("long");
-    private static final Logger LOGGER = LoggerFactory.getLogger(FCGINative.class);
     private static final long MAX_STRING_BYTES = 8L * 1024;
     private final Arena libraryArena = Arena.ofAuto();
     // just make it work
@@ -168,6 +168,7 @@ final class FCGINative implements AutoCloseable {
     ///
     /// @return request object
     public FCGXRequest accept() {
+        LOGGER.debug("accept enter");
         return new FCGXRequest();
     }
 
@@ -185,6 +186,7 @@ final class FCGINative implements AutoCloseable {
         private final MemorySegment structPointer;
 
         FCGXRequest() {
+            LOGGER.debug("new FCGXRequest");
             // request is confined to a single thread
             arena = Arena.ofConfined();
             // allocate memory for the struct
@@ -192,8 +194,10 @@ final class FCGINative implements AutoCloseable {
             // prepare the struct. Last two arguments have been "0, 0" in every example I looked at.
             invokeErrorReturningFunction(
                     "FCGX_InitRequest", () -> (int) FCGX_InitRequest_handle.invokeExact(structPointer, 0, 0));
+            LOGGER.debug("before accept");
             // perform accept - blocking
             invokeErrorReturningFunction("FCGX_Accept_r", () -> (int) FCGX_Accept_r_handle.invokeExact(structPointer));
+            LOGGER.debug("after accept");
         }
 
         public FCGIExchange exchange() {
@@ -224,6 +228,7 @@ final class FCGINative implements AutoCloseable {
 
     private class FCGXOutputStream extends OutputStream {
         private final MemorySegment pointer;
+        private boolean closed;
 
         public FCGXOutputStream(MemorySegment pointer) {
             this.pointer = pointer;
@@ -232,27 +237,28 @@ final class FCGINative implements AutoCloseable {
         @Override
         public void write(int b) throws IOException {
             try {
-                FCGX_PutChar_handle.invokeExact(b, pointer);
+                int r = (int) FCGX_PutChar_handle.invokeExact(b, pointer); // cast to int necessary for signature match
             } catch (Throwable e) {
                 throw new IOException(e);
             }
         }
 
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            Objects.checkFromIndexSize(off, len, b.length);
-            try (var arena = Arena.ofConfined()) {
-                var charStar = arena.allocate(MemoryLayout.sequenceLayout(len, C_CHAR));
-                MemorySegment.copy(b, off, charStar, C_CHAR, 0, len);
-                var count = (int) FCGX_PutStr_handle.invokeExact(charStar, len, pointer);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
-        }
+        //        @Override
+        //        public void write(byte[] b, int off, int len) throws IOException {
+        //            Objects.checkFromIndexSize(off, len, b.length);
+        //            try (var arena = Arena.ofConfined()) {
+        //                var charStar = arena.allocate(MemoryLayout.sequenceLayout(len, C_CHAR));
+        //                MemorySegment.copy(b, off, charStar, C_CHAR, 0, len);
+        //                var count = (int) FCGX_PutStr_handle.invokeExact(charStar, len, pointer);
+        //            } catch (Throwable e) {
+        //                throw new RuntimeException(e);
+        //            }
+        //        }
 
         @Override
         public void flush() throws IOException {
             try {
+                LOGGER.debug("output flush");
                 invokeErrorReturningFunction("FCGX_FFlush", () -> (int) FCGX_FFlush_handle.invokeExact(pointer));
             } catch (Throwable e) {
                 throw new IOException(e);
@@ -261,7 +267,12 @@ final class FCGINative implements AutoCloseable {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
+            closed = true;
             try {
+                LOGGER.debug("output close");
                 invokeErrorReturningFunction("FCGX_FFlush", () -> (int) FCGX_FFlush_handle.invokeExact(pointer));
                 invokeErrorReturningFunction("FCGX_FClose", () -> (int) FCGX_FClose_handle.invokeExact(pointer));
             } catch (Throwable e) {
@@ -286,19 +297,19 @@ final class FCGINative implements AutoCloseable {
             }
         }
 
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            Objects.checkFromIndexSize(off, len, b.length);
-
-            try (var arena = Arena.ofConfined()) {
-                var charStar = arena.allocate(MemoryLayout.sequenceLayout(len, C_CHAR));
-                var count = (int) FCGX_GetStr_handle.invokeExact(charStar, len, pointer);
-                MemorySegment.copy(charStar, C_CHAR, 0, b, off, count);
-                return count;
-            } catch (Throwable e) {
-                throw new IOException(e);
-            }
-        }
+        //        @Override
+        //        public int read(byte[] b, int off, int len) throws IOException {
+        //            Objects.checkFromIndexSize(off, len, b.length);
+        //
+        //            try (var arena = Arena.ofConfined()) {
+        //                var charStar = arena.allocate(MemoryLayout.sequenceLayout(len, C_CHAR));
+        //                var count = (int) FCGX_GetStr_handle.invokeExact(charStar, len, pointer);
+        //                MemorySegment.copy(charStar, C_CHAR, 0, b, off, count);
+        //                return count;
+        //            } catch (Throwable e) {
+        //                throw new IOException(e);
+        //            }
+        //        }
 
         @Override
         public void close() throws IOException {
