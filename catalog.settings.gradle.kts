@@ -16,6 +16,10 @@ dependencyResolutionManagement {
             library("rainbowgum-slf4j", "io.jstach.rainbowgum", "rainbowgum-slf4j").versionRef("rainbowgum")
             library("rainbowgum-pattern", "io.jstach.rainbowgum", "rainbowgum-pattern").versionRef("rainbowgum")
             library("rainbowgum-all", "io.jstach.rainbowgum", "rainbowgum").versionRef("rainbowgum")
+
+            version("testcontainers", "1.21.4")
+            library("testcontainers", "org.testcontainers", "testcontainers").versionRef("testcontainers")
+            library("testcontainers-junit5", "org.testcontainers", "junit-jupiter").versionRef("testcontainers")
         }
     }
 }
