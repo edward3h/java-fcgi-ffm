@@ -19,6 +19,7 @@ public class RGConfig implements RainbowGumServiceProvider.RainbowGumProvider {
                     r.level(System.Logger.Level.INFO, "red.ethel");
                     r.level(System.Logger.Level.DEBUG, "red.ethel.fcgi.testhttpserver.App");
                     r.level(System.Logger.Level.DEBUG, "red.ethel.fcgi.testjex.App");
+                    r.level(System.Logger.Level.DEBUG, "red.ethel.fcgi.testmysql.App");
                     r.appender("file", a -> {
                         a.encoder(new PatternEncoderBuilder("file")
                                 // We use the pattern encoder which follows logback pattern
