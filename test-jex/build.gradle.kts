@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation("io.avaje:avaje-jex:3.5-RC7")
+    implementation("io.avaje:avaje-jex:3.6")
     runtimeOnly(project(":httpserver"))
     runtimeOnly(project(":test-rgconfig"))
     runtimeOnly(libs.rainbowgum.core)
