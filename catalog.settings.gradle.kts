@@ -20,6 +20,13 @@ dependencyResolutionManagement {
             version("testcontainers", "1.21.4")
             library("testcontainers", "org.testcontainers", "testcontainers").versionRef("testcontainers")
             library("testcontainers-junit5", "org.testcontainers", "junit-jupiter").versionRef("testcontainers")
+            library("testcontainers-mysql", "org.testcontainers", "mysql").versionRef("testcontainers")
+
+            version("mysql-connector", "9.2.0")
+            library("mysql-connector", "com.mysql", "mysql-connector-j").versionRef("mysql-connector")
+
+            version("hikari", "6.3.0")
+            library("hikari", "com.zaxxer", "HikariCP").versionRef("hikari")
         }
     }
 }
