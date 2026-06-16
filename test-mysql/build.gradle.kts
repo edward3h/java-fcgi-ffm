@@ -39,7 +39,7 @@ testing {
                         systemProperty(
                             "fcgi.binary.path",
                             layout.buildDirectory
-                                .file("native/nativeCompile/test-mysql.fcgi")
+                                .file("native/nativeCompile/test-mysql-bin")
                                 .get()
                                 .asFile.absolutePath,
                         )
@@ -58,7 +58,7 @@ application {
 graalvmNative {
     binaries {
         named("main") {
-            imageName = "test-mysql.fcgi"
+            imageName = "test-mysql-bin"
             sharedLibrary = false
             systemProperties.put("java.library.path", "/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib:/usr/lib/x86_64-linux-gnu")
             systemProperties.put("com.zaxxer.hikari.useReflectionProxyFactory", "true")
@@ -69,9 +69,40 @@ graalvmNative {
     }
 }
 
+// Generates a shell wrapper test-mysql.fcgi that exports MySQL credentials from .env
+// and exec's the actual binary. FcgidInitialEnv is not usable in .htaccess on all servers,
+// so the wrapper is the portable way to inject env vars into the FastCGI process.
+val generateWrapper by tasks.registering {
+    val envFile = rootProject.file(".env")
+    val outputFile = layout.buildDirectory.file("generated/test-mysql.fcgi")
+    inputs.file(envFile)
+    outputs.file(outputFile)
+    doLast {
+        val env =
+            envFile
+                .readLines()
+                .filter { "=" in it && !it.startsWith("#") }
+                .associate { line ->
+                    val key = line.substringBefore("=").trim()
+                    val raw = line.substringAfter("=").trim()
+                    key to raw.removeSurrounding("\"").removeSurrounding("'")
+                }
+        val exports =
+            listOf("MYSQL_HOST", "MYSQL_DATABASE", "MYSQL_USERNAME", "MYSQL_PASSWORD")
+                .mapNotNull { key -> env[key]?.let { value -> "export $key='$value'" } }
+                .joinToString("\n")
+        val script = "#!/bin/sh\n$exports\nexec \"\$(dirname \"\$0\")/test-mysql-bin\"\n"
+        val outFile = outputFile.get().asFile
+        outFile.writeText(script)
+        outFile.setExecutable(true, false)
+    }
+}
+
 val prepareWeb by tasks.registering(Copy::class) {
     into(layout.buildDirectory.dir("public"))
-    from(tasks.named("nativeCompile"), layout.projectDirectory.file("src/main/resources/.htaccess"))
+    from(tasks.named("nativeCompile"))
+    from(generateWrapper.map { it.outputs.files })
+    from(layout.projectDirectory.file("src/main/resources/.htaccess"))
 }
 
 val deployWeb by tasks.registering(Exec::class) {
