@@ -105,7 +105,7 @@ The `org.ethelred.kiwiproc` plugin (applied above) auto-adds `org.ethelred.kiwip
       DataSource dataSource() { /* HikariDataSource built from MYSQL_HOST/DATABASE/USERNAME/PASSWORD env vars */ }
   }
   ```
-  This replaces the manual wiring currently done by hand in `test-mysql`'s `App.java`.
+  This replaces the manual wiring currently done by hand in `test-mysql`'s `App.java`. The env vars it reads (`MYSQL_HOST`/`MYSQL_DATABASE`/`MYSQL_USERNAME`/`MYSQL_PASSWORD`) are the same ones `test-mysql/build.gradle.kts`'s `generateWrapper` task injects via the shell-wrapper pattern for DreamHost deployment — `test-avaje`'s `build.gradle.kts` reuses that same task verbatim (just renamed to `test-avaje.fcgi`/`test-avaje-bin`).
 
 - **`CounterController`** (avaje-http) — constructor-injected with `CounterDAO`:
   ```java
