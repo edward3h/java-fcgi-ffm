@@ -453,6 +453,19 @@ git add test-avaje/src/main/java/red/ethel/fcgi/testavaje/CounterController.java
 git commit -m "Add CounterController avaje-http controller"
 ```
 
+> **Deviation found during Task 7's integration test:** avaje-http-jex-generator hardcodes the response status by HTTP verb — `@Get` routes get `ctx.status(200)`, `@Post` routes get `ctx.status(201)` — unconditionally, and `@Post` has no attribute to override it. The design spec (`docs/superpowers/specs/2026-06-17-test-avaje-design.md:145`) requires `POST /db/counters/{name}/increment -> 200`, not 201. The fix: add an `io.avaje.jex.http.Context ctx` parameter to `increment`, calling `ctx.status(200)` before returning — confirmed by inspecting the generated route that the controller method's `ctx.status(200)` call runs after the route's default `ctx.status(201)` and before the response body is written via `ctx.jsonb(...)`, so it correctly overrides the default. Updated method:
+> ```java
+> @Post("/{name}/increment")
+> CounterDAO.Counter increment(String name, Context ctx) {
+>     if (!dao.incrementByName(name)) {
+>         throw new NotFoundException("Not found: " + name);
+>     }
+>     ctx.status(200);
+>     return dao.findByName(name);
+> }
+> ```
+> (plus `import io.avaje.jex.http.Context;`)
+
 ---
 
 ### Task 6: Write the application entry point
@@ -602,6 +615,8 @@ class AppIntegrationTest {
 Run: `./gradlew :test-avaje:integrationTest`
 
 Expected: BUILD SUCCESSFUL, 3 tests passed. This compiles the module, runs kiwiproc's build-time SQL validation, native-compiles the binary (`nativeCompile` is a dependency of the `integrationTest` task), then runs all three tests against the real native binary in a container.
+
+> **Deviation found during implementation:** the `integrationTest` task fails before any test runs with `NoClassDefFoundError: org/apache/commons/codec/Charsets` (or a similar `ClassNotFoundException`) when testcontainers copies the native binary into the container. Root cause: kiwiproc forces `commons-compress` to `>= 1.26.0` (a transitive dependency-constraint bump, likely a CVE pin), and `commons-compress 1.26.0`'s `TarArchiveOutputStream` (used internally by testcontainers' `copyFileToContainer`) references `org.apache.commons.codec.Charsets`, which only exists in `commons-codec` — a dependency testcontainers itself doesn't need at its own default `commons-compress` version (1.24.0), so nothing pulls it in. `test-mysql` doesn't hit this because it doesn't depend on kiwiproc. Fix: add `runtimeOnly("commons-codec:commons-codec:1.17.1")` to the `integrationTest` suite's dependencies block in `test-avaje/build.gradle.kts`.
 
 If it fails, use @superpowers:systematic-debugging rather than guessing — likely failure points, in order of likelihood: (a) the DI wiring (`DataSourceFactory`'s `@Named` qualifier not matching kiwiproc's generated provider — check the generated `$CounterDAO$Provider.java` import for `Named` matches `jakarta.inject.Named` exactly), (b) `AvajeJex.start()` not finding the generated `Routing.HttpService` beans (check `CounterController$Route.java` was generated and is itself annotated for avaje-inject pickup), (c) native-image reflection gaps surfacing as a runtime crash inside the container (check container logs via `docker logs` on the still-running container, or temporarily comment out `@Container` annotations to keep them alive past test failure).
 

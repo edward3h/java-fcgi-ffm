@@ -5,6 +5,7 @@ import io.avaje.http.api.Controller;
 import io.avaje.http.api.Get;
 import io.avaje.http.api.Path;
 import io.avaje.http.api.Post;
+import io.avaje.jex.http.Context;
 import io.avaje.jex.http.NotFoundException;
 import java.util.List;
 
@@ -23,10 +24,11 @@ class CounterController {
     }
 
     @Post("/{name}/increment")
-    CounterDAO.Counter increment(String name) {
+    CounterDAO.Counter increment(String name, Context ctx) {
         if (!dao.incrementByName(name)) {
             throw new NotFoundException("Not found: " + name);
         }
+        ctx.status(200);
         return dao.findByName(name);
     }
 }

@@ -48,6 +48,11 @@ testing {
                 implementation(libs.testcontainers.junit5)
                 implementation(libs.testcontainers.mysql)
                 implementation("com.google.truth:truth:1.4.5")
+                // kiwiproc declares a Dependabot CVE constraint forcing commons-compress >= 1.26.0,
+                // whose TarArchiveOutputStream (used by testcontainers' copyFileToContainer) needs
+                // commons-codec.Charsets at runtime; testcontainers itself only pulls compress 1.24.0,
+                // which doesn't need it, so the dependency is otherwise absent from the classpath.
+                runtimeOnly("commons-codec:commons-codec:1.17.1")
                 runtimeOnly("org.slf4j:slf4j-simple:2.0.17")
             }
             targets {
