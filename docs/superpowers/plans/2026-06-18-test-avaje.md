@@ -641,6 +641,8 @@ In `README.md`, after the `test-mysql` row, add (matching the existing table's o
 | `test-avaje` | Example app using [avaje-http](https://avaje.io/http/) + [avaje-inject](https://avaje.io/inject/) on [avaje-jex](https://avaje.io/jex/), with [kiwiproc](https://edward3h.github.io/kiwiproc/) for compile-time-checked JDBC |
 ```
 
+> **Deviation found during implementation:** there is no `test-mysql` row in `README.md`'s Modules table — `test-mysql` was added to the repo without ever being documented there (a pre-existing gap, unrelated to this plan). Since this task's scope is only to document `test-avaje`, the new row is inserted after the `test-jex` row instead (keeping all example-app rows grouped together, before the shared `test-rgconfig` config row) rather than leaving it unanchored or expanding scope to also backfill `test-mysql`'s missing row.
+
 - [ ] **Step 2: Commit**
 
 ```bash
