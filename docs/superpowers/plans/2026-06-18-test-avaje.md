@@ -453,18 +453,18 @@ git add test-avaje/src/main/java/red/ethel/fcgi/testavaje/CounterController.java
 git commit -m "Add CounterController avaje-http controller"
 ```
 
-> **Deviation found during Task 7's integration test:** avaje-http-jex-generator hardcodes the response status by HTTP verb — `@Get` routes get `ctx.status(200)`, `@Post` routes get `ctx.status(201)` — unconditionally, and `@Post` has no attribute to override it. The design spec (`docs/superpowers/specs/2026-06-17-test-avaje-design.md:145`) requires `POST /db/counters/{name}/increment -> 200`, not 201. The fix: add an `io.avaje.jex.http.Context ctx` parameter to `increment`, calling `ctx.status(200)` before returning — confirmed by inspecting the generated route that the controller method's `ctx.status(200)` call runs after the route's default `ctx.status(201)` and before the response body is written via `ctx.jsonb(...)`, so it correctly overrides the default. Updated method:
+> **Deviation found during Task 7's integration test:** avaje-http-jex-generator defaults the response status by HTTP verb — `@Get` routes get `ctx.status(200)`, `@Post` routes get `ctx.status(201)` — unless overridden. The design spec (`docs/superpowers/specs/2026-06-17-test-avaje-design.md:145`) requires `POST /db/counters/{name}/increment -> 200`, not 201. The fix: annotate the method with `@Produces(statusCode = 200)` (`io.avaje.http.api.Produces`), which is exactly avaje-http's documented mechanism for overriding a route's default status — confirmed via `Produces.statusCode()`'s javadoc and by tracing `MethodReader.statusCode()`/`ControllerMethodWriter` in avaje-http's own generator source, plus a passing example of the same pattern in avaje-http's own jex test suite. (An earlier attempt used a manual `Context ctx` parameter + `ctx.status(200)` call; this is unnecessary now that the dedicated annotation attribute was found, and was replaced.) Updated method:
 > ```java
 > @Post("/{name}/increment")
-> CounterDAO.Counter increment(String name, Context ctx) {
+> @Produces(statusCode = 200)
+> CounterDAO.Counter increment(String name) {
 >     if (!dao.incrementByName(name)) {
 >         throw new NotFoundException("Not found: " + name);
 >     }
->     ctx.status(200);
 >     return dao.findByName(name);
 > }
 > ```
-> (plus `import io.avaje.jex.http.Context;`)
+> (plus `import io.avaje.http.api.Produces;`)
 
 ---
 
