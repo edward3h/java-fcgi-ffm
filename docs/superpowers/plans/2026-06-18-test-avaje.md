@@ -326,11 +326,15 @@ public interface CounterDAO {
 }
 ```
 
+> **Deviation found during implementation:** the code above as written does not compile against kiwiproc 0.11 — its generated code has a real bug (filed as [kiwiproc#379](https://github.com/edward3h/kiwiproc/issues/379)) where a result column named `value` collides with an internal generated variable name, always literally named `value`, used to hold the constructed record. The actual implementation works around this by aliasing the column to `v` in both `@SqlQuery` SQL strings, renaming the record component to `v` to match (kiwiproc matches record components to columns by name), and adding `@Json.Property("value")` on that component so the JSON wire format is unaffected (`{"name":"page_views","value":0}` still works). `incrementByName`'s `@SqlUpdate` doesn't select any columns, so it's unaffected and unchanged.
+
 - [ ] **Step 3: Compile just this module to confirm kiwiproc generates the provider**
 
 Run: `./gradlew :test-avaje:compileJava`
 
 Expected: BUILD SUCCESSFUL. This requires Docker — kiwiproc's plugin spins up a real MySQL via testcontainers, applies `changelog.xml`, and validates `CounterDAO`'s SQL against it before generating `$CounterDAO$Provider`. Check `test-avaje/build/generated/sources/annotationProcessor/java/main/red/ethel/fcgi/testavaje/$CounterDAO$Provider.java` exists and is annotated `@Singleton` with a `@Named("default") DataSource` constructor parameter (confirms the design spec's claim about kiwiproc's generated code shape).
+
+> **Correction found during implementation:** `compileJava` does NOT reach BUILD SUCCESSFUL at this point — avaje-inject's compile-time DI check eagerly validates the whole dependency graph and fails with `Dependencies [javax.sql.DataSource with qualifier: default] are not provided` until Task 4's `DataSourceFactory` exists. That error is expected at this stage; what actually confirms this task is correct is that the kiwiproc-specific errors are gone and `$CounterDAO$Provider.java`/`$CounterDAO$Impl.java` are generated with the right shape (checked directly). Full `compileJava` success is deferred to Task 4.
 
 - [ ] **Step 4: Commit**
 
