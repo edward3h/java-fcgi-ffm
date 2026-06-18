@@ -9,3 +9,6 @@ build
 .idea
 *.log
 .env
+
+# Git worktrees for isolated agent workspaces
+.worktrees
