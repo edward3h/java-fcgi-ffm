@@ -14,6 +14,7 @@ Allows a Java HTTP server to be invoked by a web server (Apache, Nginx, etc.) vi
 | `httpserver` | `HttpsServer` adapter implementing the `com.sun.net.httpserver` SPI |
 | `test-httpserver` | Example app using Java's built-in `HttpServer` |
 | `test-jex` | Example app using the [Jex](https://javalin.io) web framework |
+| `test-avaje` | Example app using [avaje-http](https://avaje.io/http/) + [avaje-inject](https://avaje.io/inject/) on [avaje-jex](https://avaje.io/jex/), with [kiwiproc](https://edward3h.github.io/kiwiproc/) for compile-time-checked JDBC |
 | `test-rgconfig` | Shared [RainbowGum](https://github.com/jstachio/rainbowgum) logging configuration for example apps |
 
 ## Requirements
