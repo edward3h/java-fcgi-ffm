@@ -10,6 +10,7 @@ include(
     "test-httpserver",
     "test-rgconfig",
     "test-jex",
-    "test-mysql"
+    "test-mysql",
+    "test-avaje"
 )
 apply(from = "catalog.settings.gradle.kts")
