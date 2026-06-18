@@ -12,3 +12,4 @@ build
 
 # Git worktrees for isolated agent workspaces
 .worktrees
+supertool
