@@ -1,7 +1,7 @@
 plugins {
     application
     id("java-convention")
-    id("org.graalvm.buildtools.native") version "0.11.1"
+    id("graalvm-native-convention")
     id("org.ethelred.kiwiproc") version "0.11"
 }
 
