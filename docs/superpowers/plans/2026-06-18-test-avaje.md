@@ -382,6 +382,8 @@ public class DataSourceFactory {
 
 `@Named("default")` here uses `jakarta.inject.Named` (same annotation kiwiproc's generated `$CounterDAO$Provider` constructor parameter is annotated with) so avaje-inject resolves the qualifier match unambiguously.
 
+> **Deviation found during implementation:** the code above as written does not compile against avaje-inject 12.6 — its generated `DataSourceFactory$DI.java` calls the `destroyMethod` (`close`) against the *declared return type* of the factory method, not the runtime type. Since the method is declared to return `javax.sql.DataSource` (which has no `close()` method), `builder.addPreDestroy($bean::close)` fails to compile. The fix is to declare the factory method's return type as the concrete `HikariDataSource` instead (which does have `close()`), dropping the `javax.sql.DataSource` import. `@Named("default")` is unchanged, and avaje-inject still registers the bean for injection as `DataSource` (and other implemented supertypes), so kiwiproc's generated `$CounterDAO$Provider` constructor parameter (`@Named("default") DataSource`) resolves correctly.
+
 - [ ] **Step 2: Compile to confirm avaje-inject accepts the factory**
 
 Run: `./gradlew :test-avaje:compileJava`
