@@ -6,6 +6,8 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.hikari)
+    implementation(libs.mysql.connector)
     implementation("io.avaje:avaje-inject:12.6")
     implementation("io.avaje:avaje-http-api:3.9")
     implementation("io.avaje:avaje-jex:3.6")
