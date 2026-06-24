@@ -16,7 +16,8 @@ public class App {
             LOGGER.info("Starting test-mysql app");
 
             var config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://" + System.getenv("MYSQL_HOST") + "/" + System.getenv("MYSQL_DATABASE"));
+            config.setJdbcUrl("jdbc:mysql://" + System.getenv("MYSQL_HOST") + "/" + System.getenv("MYSQL_DATABASE")
+                    + "?connectTimeout=5000&socketTimeout=10000");
             config.setUsername(System.getenv("MYSQL_USERNAME"));
             config.setPassword(System.getenv("MYSQL_PASSWORD"));
             config.setMaximumPoolSize(5);
