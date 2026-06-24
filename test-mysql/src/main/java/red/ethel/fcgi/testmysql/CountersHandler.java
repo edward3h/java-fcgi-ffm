@@ -32,8 +32,9 @@ class CountersHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange) throws IOException {
         try (var conn = dataSource.getConnection();
-                var stmt = conn.createStatement();
-                var rs = stmt.executeQuery("SELECT name, value FROM counter ORDER BY name")) {
+                var stmt = conn.createStatement()) {
+            stmt.setQueryTimeout(10);
+            var rs = stmt.executeQuery("SELECT name, value FROM counter ORDER BY name");
             var lines = new ArrayList<String>();
             while (rs.next()) {
                 lines.add(rs.getString("name") + "=" + rs.getInt("value"));
@@ -52,6 +53,7 @@ class CountersHandler implements HttpHandler {
         }
         try (var conn = dataSource.getConnection();
                 var stmt = conn.prepareStatement("UPDATE counter SET value = value + 1 WHERE name = ?")) {
+            stmt.setQueryTimeout(10);
             stmt.setString(1, name);
             var updated = stmt.executeUpdate();
             if (updated == 0) {
