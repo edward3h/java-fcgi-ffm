@@ -66,7 +66,14 @@ public final class FcgiService extends BaseService implements Service {
 
     @Override
     protected Executor defaultExecutor() {
-        ThreadFactory factory = Thread.ofVirtual().name("worker", 1).factory();
+        // Platform threads, not virtual: nativeWrapper.accept() is a blocking FFM
+        // downcall, which always pins its carrier for the duration of the call.
+        // A perpetually-blocked accept() listener task can starve other virtual
+        // threads of carriers, including ones whose continuation is ready to run
+        // (e.g. a socket read that the poller has already marked readable) but
+        // can't find a free carrier to resume on - manifesting as a request whose
+        // handler never progresses even after its backend response has arrived.
+        ThreadFactory factory = Thread.ofPlatform().name("worker", 1).factory();
         return Executors.newThreadPerTaskExecutor(factory);
     }
 }
