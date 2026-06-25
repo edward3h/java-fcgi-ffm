@@ -50,8 +50,8 @@ public final class FcgiConnection implements AutoCloseable {
         RecordHeader header;
         do {
             header = RecordHeader.readFrom(rawIn);
-            if (header.type() != RecordType.PARAMS) {
-                throw new IOException("Expected PARAMS, got " + header.type());
+            if (header.type() != RecordType.PARAMS || header.requestId() != requestId) {
+                throw new IOException("Expected PARAMS for request " + requestId + ", got " + header);
             }
             paramsBytes.write(rawIn.readNBytes(header.contentLength()));
             rawIn.skipNBytes(header.paddingLength());
@@ -85,6 +85,8 @@ public final class FcgiConnection implements AutoCloseable {
         rawOut.flush();
     }
 
+    /// Flushes the response stream. Does not close the underlying rawIn/rawOut
+    /// streams - callers own their lifecycle.
     @Override
     public void close() throws IOException {
         rawOut.flush();

@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.LinkedHashMap;
@@ -77,6 +78,43 @@ class FcgiConnectionTest {
         var endRequest = RecordHeader.readFrom(responseIn);
         assertThat(endRequest.type()).isEqualTo(RecordType.END_REQUEST);
     }
+
+    @Test
+    void throwsOnATruncatedBeginRequestBody() throws Exception {
+        var wire = new ByteArrayOutputStream();
+        new RecordHeader(1, RecordType.BEGIN_REQUEST, REQUEST_ID, 1, 0).writeTo(wire);
+        wire.write(new byte[] {1}); // only 1 byte of what should be at least a 2-byte role field
+
+        var connection = newConnectionOverFixedInput(wire.toByteArray());
+        assertThrows(IOException.class, connection::readRequestHeader);
+    }
+
+    @Test
+    void wrapsMalformedParamsAsIOException() throws Exception {
+        var wire = new ByteArrayOutputStream();
+        writeBeginRequest(wire, FCGI_RESPONDER);
+        writeParamsRecord(wire, new byte[] {5, 1, 'A'}); // claims a 5-byte name, only 1 byte follows
+        writeParamsRecord(wire, new byte[0]);
+
+        var connection = newConnectionOverFixedInput(wire.toByteArray());
+        assertThrows(IOException.class, connection::readRequestHeader);
+    }
+
+    @Test
+    void throwsOnAParamsRecordWithTheWrongRequestId() throws Exception {
+        var wire = new ByteArrayOutputStream();
+        writeBeginRequest(wire, FCGI_RESPONDER);
+        new RecordHeader(1, RecordType.PARAMS, REQUEST_ID + 1, 0, 0).writeTo(wire); // wrong request ID
+
+        var connection = newConnectionOverFixedInput(wire.toByteArray());
+        assertThrows(IOException.class, connection::readRequestHeader);
+    }
+
+    private static void assertThrows(Class<? extends Throwable> type, ThrowingRunnable runnable) {
+        org.junit.jupiter.api.Assertions.assertThrows(type, runnable);
+    }
+
+    private interface ThrowingRunnable extends org.junit.jupiter.api.function.Executable {}
 
     private static FcgiConnection newConnectionOverFixedInput(byte[] wire) {
         return new FcgiConnection(new ByteArrayInputStream(wire), new ByteArrayOutputStream());
