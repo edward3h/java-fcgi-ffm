@@ -1,6 +1,6 @@
 # java-fcgi-ffm
 
-A Java library for running web applications as FastCGI processes, using the Foreign Function & Memory (FFM) API to wrap the native `libfcgi` library.
+A Java library for running web applications as FastCGI processes, using the Foreign Function & Memory (FFM) API with a minimal POSIX socket shim and the FastCGI protocol implemented in pure Java.
 
 ## What it does
 
@@ -10,7 +10,7 @@ Allows a Java HTTP server to be invoked by a web server (Apache, Nginx, etc.) vi
 
 | Module | Description |
 |---|---|
-| `fcgi` | Core library — FFM bindings for libfcgi, `Service` implementations for FastCGI and CGI |
+| `fcgi` | Core library — minimal POSIX socket shim via FFM, FastCGI protocol in pure Java, `Service` implementations for FastCGI and CGI |
 | `httpserver` | `HttpsServer` adapter implementing the `com.sun.net.httpserver` SPI |
 | `test-httpserver` | Example app using Java's built-in `HttpServer` |
 | `test-jex` | Example app using the [Jex](https://javalin.io) web framework |
@@ -20,7 +20,6 @@ Allows a Java HTTP server to be invoked by a web server (Apache, Nginx, etc.) vi
 ## Requirements
 
 - Java 25+
-- `libfcgi` installed (e.g. `apt install libfcgi-dev` on Debian/Ubuntu)
 
 ## Building
 
