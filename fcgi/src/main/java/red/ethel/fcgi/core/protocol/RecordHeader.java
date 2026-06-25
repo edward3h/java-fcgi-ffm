@@ -33,7 +33,7 @@ public record RecordHeader(int version, RecordType type, int requestId, int cont
             (byte) (contentLength >> 8),
             (byte) contentLength,
             (byte) paddingLength,
-            0
+            0 // reserved, must be 0
         });
     }
 }

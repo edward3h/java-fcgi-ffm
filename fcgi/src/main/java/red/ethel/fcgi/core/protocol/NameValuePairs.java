@@ -13,6 +13,14 @@ public final class NameValuePairs {
     private NameValuePairs() {}
 
     public static Map<String, String> decode(byte[] block) {
+        try {
+            return decodeUnchecked(block);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Malformed FCGI_PARAMS block", e);
+        }
+    }
+
+    private static Map<String, String> decodeUnchecked(byte[] block) {
         var result = new LinkedHashMap<String, String>();
         int pos = 0;
         while (pos < block.length) {

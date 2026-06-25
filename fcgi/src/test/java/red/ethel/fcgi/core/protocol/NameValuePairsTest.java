@@ -66,4 +66,16 @@ class NameValuePairsTest {
         assertThat(encoded[1] & 0x80).isEqualTo(0x80); // value length: high bit set, 4-byte form
         assertThat(NameValuePairs.decode(encoded)).containsExactlyEntriesIn(pairs);
     }
+
+    @Test
+    void throwsOnATruncatedBlock() {
+        byte[] truncated = {5, 1, 'A'}; // claims a 5-byte name but only 1 byte follows
+        assertThrows(IllegalArgumentException.class, () -> NameValuePairs.decode(truncated));
+    }
+
+    private static void assertThrows(Class<? extends Throwable> type, ThrowingRunnable runnable) {
+        org.junit.jupiter.api.Assertions.assertThrows(type, runnable);
+    }
+
+    private interface ThrowingRunnable extends org.junit.jupiter.api.function.Executable {}
 }
