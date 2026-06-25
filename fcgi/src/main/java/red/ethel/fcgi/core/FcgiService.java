@@ -43,8 +43,7 @@ public final class FcgiService extends BaseService implements Service {
     }
 
     private void handleConnection(int clientFd, Handler handler) {
-        try {
-            var connection = new FcgiConnection(Posix.inputStream(clientFd), Posix.outputStream(clientFd));
+        try (var connection = new FcgiConnection(Posix.inputStream(clientFd), Posix.outputStream(clientFd))) {
             var env = connection.readRequestHeader();
             try (var out = connection.stdout()) {
                 handler.handle(new FCGIExchange(env, connection.stdin(), out));
@@ -53,7 +52,11 @@ public final class FcgiService extends BaseService implements Service {
         } catch (Exception e) {
             LOGGER.error("Exception handling FastCGI connection", e);
         } finally {
-            Posix.close(clientFd);
+            try {
+                Posix.close(clientFd);
+            } catch (FCGIException e) {
+                LOGGER.warn("Failed to close client fd {}", clientFd, e);
+            }
         }
     }
 

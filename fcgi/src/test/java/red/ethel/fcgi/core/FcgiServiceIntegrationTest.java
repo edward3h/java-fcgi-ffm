@@ -51,6 +51,15 @@ class FcgiServiceIntegrationTest {
             assertThat(stdout.type()).isEqualTo(RecordType.STDOUT);
             byte[] body = clientIn.readNBytes(stdout.contentLength());
             assertThat(new String(body)).isEqualTo("hello from handler");
+
+            var stdoutTerminator = RecordHeader.readFrom(clientIn);
+            assertThat(stdoutTerminator.type()).isEqualTo(RecordType.STDOUT);
+            assertThat(stdoutTerminator.contentLength()).isEqualTo(0);
+
+            var endRequest = RecordHeader.readFrom(clientIn);
+            assertThat(endRequest.type()).isEqualTo(RecordType.END_REQUEST);
+            byte[] endBody = clientIn.readNBytes(endRequest.contentLength());
+            assertThat(endBody[0] | endBody[1] | endBody[2] | endBody[3]).isEqualTo(0);
         }
     }
 
