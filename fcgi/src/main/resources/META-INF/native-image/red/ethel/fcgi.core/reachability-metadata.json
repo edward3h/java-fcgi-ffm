@@ -1,8 +1,8 @@
 {
   "foreign": {
     "downcalls": [
-      { "returnType": "int",  "parameterTypes": ["long", "int", "long", "long"] },
-      { "returnType": "long", "parameterTypes": ["long", "int", "long", "long"] },
+      { "returnType": "int",  "parameterTypes": ["int", "void*", "void*"], "options": {"captureCallState": true} },
+      { "returnType": "long", "parameterTypes": ["int", "void*", "long"], "options": {"captureCallState": true} },
       { "returnType": "int",  "parameterTypes": ["int"] }
     ]
   }
