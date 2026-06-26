@@ -1,30 +1,9 @@
 {
   "foreign": {
     "downcalls": [
-      {
-        "returnType": "int",
-        "parameterTypes": []
-      },
-      {
-        "returnType": "int",
-        "parameterTypes": ["long", "int", "int"]
-      },
-      {
-        "returnType": "int",
-        "parameterTypes": ["long"]
-      },
-      {
-        "returnType": "void",
-        "parameterTypes": ["long"]
-      },
-      {
-        "returnType": "int",
-        "parameterTypes": ["int","long"]
-      },
-      {
-        "returnType": "int",
-        "parameterTypes": ["long","int","long"]
-      }
+      { "returnType": "int",  "parameterTypes": ["int", "void*", "void*"], "options": {"captureCallState": true} },
+      { "returnType": "long", "parameterTypes": ["int", "void*", "long"], "options": {"captureCallState": true} },
+      { "returnType": "int",  "parameterTypes": ["int"] }
     ]
   }
 }

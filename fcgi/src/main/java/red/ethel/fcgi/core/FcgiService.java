@@ -3,76 +3,74 @@ package red.ethel.fcgi.core;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import red.ethel.fcgi.core.posix.Posix;
+import red.ethel.fcgi.core.protocol.FcgiConnection;
 
 public final class FcgiService extends BaseService implements Service {
     private static final Logger LOGGER = LoggerFactory.getLogger(FcgiService.class);
+    private static final int STDIN_FD = 0;
 
-    private final FCGINative nativeWrapper;
+    private final int listenFd;
 
-    private FcgiService(FCGINative nativeWrapper) {
-        this.nativeWrapper = nativeWrapper;
+    private FcgiService(int listenFd) {
+        this.listenFd = listenFd;
     }
 
     public static Service create() {
-        var wrapper = new FCGINative();
-        if (wrapper.isCGI()) {
-            try {
-                wrapper.close();
-            } catch (Exception _) {
-                // ignore
-            }
+        if (!Posix.isSocket(STDIN_FD)) {
             return new CgiService();
         }
-        return new FcgiService(wrapper);
+        return new FcgiService(STDIN_FD);
+    }
+
+    /// Test-only seam: package-visible so FcgiServiceTestFactory (test source)
+    /// can target an arbitrary listening fd instead of the real fd 0.
+    static FcgiService forListenFd(int listenFd) {
+        return new FcgiService(listenFd);
     }
 
     @Override
     public void serve(Handler handler) {
         LOGGER.debug("FcgiService.serve");
-        Semaphore acceptOne = new Semaphore(1);
+        while (true) {
+            int clientFd = Posix.accept(listenFd);
+            LOGGER.debug("accepted fd {}", clientFd);
+            executor.execute(() -> handleConnection(clientFd, handler));
+        }
+    }
 
-        try {
-
-            while (true) {
-                LOGGER.debug("worker loop head");
-                acceptOne.acquire();
-                executor.execute(() -> {
-                    LOGGER.debug("Worker.run enter");
-                    try (var request = nativeWrapper.accept()) {
-                        acceptOne.release();
-                        LOGGER.debug("handle enter");
-                        handler.handle(request.exchange());
-                        LOGGER.debug("handle exit");
-                    } catch (Throwable e) {
-                        LOGGER.error("Exception in worker thread", e);
-                    } finally {
-                        LOGGER.debug("Worker.run exit");
-                    }
-                });
+    private void handleConnection(int clientFd, Handler handler) {
+        try (var connection = new FcgiConnection(Posix.inputStream(clientFd), Posix.outputStream(clientFd))) {
+            var env = connection.readRequestHeader();
+            try (var out = connection.stdout()) {
+                handler.handle(new FCGIExchange(env, connection.stdin(), out));
             }
-        } catch (InterruptedException _) {
-            LOGGER.debug("interrupted");
+            connection.finish(0);
+        } catch (Exception e) {
+            LOGGER.error("Exception handling FastCGI connection", e);
+        } finally {
+            try {
+                Posix.close(clientFd);
+            } catch (FCGIException e) {
+                LOGGER.warn("Failed to close client fd {}", clientFd, e);
+            }
         }
     }
 
     @Override
-    public void close() throws Exception {
-        nativeWrapper.close();
+    public void close() {
+        // nothing to release: Posix holds no per-process resources to close
     }
 
     @Override
     protected Executor defaultExecutor() {
-        // Platform threads, not virtual: nativeWrapper.accept() is a blocking FFM
-        // downcall, which always pins its carrier for the duration of the call.
-        // A perpetually-blocked accept() listener task can starve other virtual
-        // threads of carriers, including ones whose continuation is ready to run
-        // (e.g. a socket read that the poller has already marked readable) but
-        // can't find a free carrier to resume on - manifesting as a request whose
-        // handler never progresses even after its backend response has arrived.
+        // Platform threads, not virtual: accept()/read()/write() are blocking
+        // FFM downcalls that pin their carrier thread for the call's duration.
+        // Virtual threads here would reproduce the carrier starvation bug from
+        // commit 8a55d05.
         ThreadFactory factory = Thread.ofPlatform().name("worker", 1).factory();
         return Executors.newThreadPerTaskExecutor(factory);
     }
