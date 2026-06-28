@@ -50,8 +50,8 @@ final class FCGIHttpExchange extends HttpExchange {
     private Headers headersFromEnv(Map<String, String> env) {
         var transformed = env.entrySet().stream()
                 .filter(e -> e.getKey().startsWith("HTTP_")
-                        || e.getKey().equals("CONTENT_TYPE")
-                        || e.getKey().equals("CONTENT_LENGTH"))
+                        || "CONTENT_TYPE".equals(e.getKey())
+                        || "CONTENT_LENGTH".equals(e.getKey()))
                 .map(mapKey(s -> s.startsWith("HTTP_") ? s.substring(5) : s))
                 .map(mapKey(s -> s.replace('_', '-')))
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> List.of(e.getValue())));

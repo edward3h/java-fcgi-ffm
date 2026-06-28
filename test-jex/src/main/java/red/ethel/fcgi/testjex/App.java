@@ -16,7 +16,7 @@ public class App {
                 //                .post("/*", ctx -> {
                 //                    throw new NotFoundException(ctx.path());
                 //                })
-                .filter((ctx, chain) -> {
+                .filter((_, chain) -> {
                     LOGGER.debug("before request");
                     chain.proceed();
                     LOGGER.debug("after request");
