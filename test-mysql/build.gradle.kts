@@ -27,7 +27,7 @@ testing {
                 implementation(libs.testcontainers.junit5)
                 implementation(libs.testcontainers.mysql)
                 implementation("com.google.truth:truth:1.4.5")
-                runtimeOnly("org.slf4j:slf4j-simple:2.0.17")
+                runtimeOnly("org.slf4j:slf4j-simple:2.0.18")
             }
             targets {
                 all {
