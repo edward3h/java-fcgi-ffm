@@ -10,7 +10,7 @@ dependencyResolutionManagement {
 
             library("publish-on-central", "org.danilopianini:publish-on-central:9.1.13")
 
-            library("avaje-spi", "io.avaje:avaje-spi-service:2.12")
+            library("avaje-spi", "io.avaje:avaje-spi-service:2.17")
             version("rainbowgum", "0.8.2")
             library("rainbowgum-core", "io.jstach.rainbowgum", "rainbowgum-core").versionRef("rainbowgum")
             library("rainbowgum-slf4j", "io.jstach.rainbowgum", "rainbowgum-slf4j").versionRef("rainbowgum")
