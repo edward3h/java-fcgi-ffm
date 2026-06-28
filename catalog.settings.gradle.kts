@@ -22,7 +22,7 @@ dependencyResolutionManagement {
             library("testcontainers-junit5", "org.testcontainers", "junit-jupiter").versionRef("testcontainers")
             library("testcontainers-mysql", "org.testcontainers", "mysql").versionRef("testcontainers")
 
-            version("mysql-connector", "9.2.0")
+            version("mysql-connector", "9.7.0")
             library("mysql-connector", "com.mysql", "mysql-connector-j").versionRef("mysql-connector")
 
             version("hikari", "6.3.0")
