@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             version("mysql-connector", "9.2.0")
             library("mysql-connector", "com.mysql", "mysql-connector-j").versionRef("mysql-connector")
 
-            version("hikari", "6.3.0")
+            version("hikari", "6.3.3")
             library("hikari", "com.zaxxer", "HikariCP").versionRef("hikari")
         }
     }
