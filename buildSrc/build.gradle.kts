@@ -15,6 +15,6 @@ java {
 
 dependencies {
     implementation("com.diffplug.spotless:spotless-plugin-gradle:8.7.0")
-    implementation(libs.publish.on.central)
+    implementation(libs.vanniktech.maven.publish)
     implementation("org.graalvm.buildtools:native-gradle-plugin:0.11.5")
 }

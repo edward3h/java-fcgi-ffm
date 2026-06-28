@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     id("java-convention")
+    id("publishing-convention")
 }
 
 testing {
