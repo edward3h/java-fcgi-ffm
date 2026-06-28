@@ -8,7 +8,7 @@ dependencyResolutionManagement {
             library("jspecify", "org.jspecify:jspecify:1.0.0")
             library("slf4j", "org.slf4j:slf4j-api:2.0.17")
 
-            library("publish-on-central", "org.danilopianini:publish-on-central:9.1.13")
+            library("vanniktech-maven-publish", "com.vanniktech:gradle-maven-publish-plugin:0.36.0")
 
             library("avaje-spi", "io.avaje:avaje-spi-service:2.17")
             version("rainbowgum", "0.8.2")

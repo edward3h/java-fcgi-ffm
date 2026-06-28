@@ -1,3 +1,6 @@
+apply(from = "version.gradle.kts")
+group = "org.ethelred.fcgi"
+
 // https://github.com/diffplug/spotless/issues/747
 buildscript {
     repositories {
