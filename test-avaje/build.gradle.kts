@@ -2,7 +2,7 @@ plugins {
     application
     id("java-convention")
     id("graalvm-native-convention")
-    id("org.ethelred.kiwiproc") version "0.11"
+    id("org.ethelred.kiwiproc") version "0.12"
 }
 
 dependencies {
@@ -52,7 +52,7 @@ testing {
                 // whose TarArchiveOutputStream (used by testcontainers' copyFileToContainer) needs
                 // commons-codec.Charsets at runtime; testcontainers itself only pulls compress 1.24.0,
                 // which doesn't need it, so the dependency is otherwise absent from the classpath.
-                runtimeOnly("commons-codec:commons-codec:1.17.1")
+                runtimeOnly("commons-codec:commons-codec:1.22.0")
                 runtimeOnly("org.slf4j:slf4j-simple:2.0.17")
             }
             targets {
