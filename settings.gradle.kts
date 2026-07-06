@@ -7,6 +7,7 @@ rootProject.name = "java-fcgi-ffm"
 include(
     "fcgi",
     "httpserver",
+    "docs",
     "test-httpserver",
     "test-rgconfig",
     "test-jex",

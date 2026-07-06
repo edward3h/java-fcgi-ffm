@@ -1,0 +1,74 @@
+= java-fcgi-ffm
+Edward Harman
+:icons: font
+:toc: left
+:source-highlighter: rouge
+:imagesdir: images
+
+Support running a Java HTTP server through CGI or FastCGI.
+
+== Usage
+
+=== Requirements
+
+* Java 25+
+* Application implemented against https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/httpserver/package-summary.html[the JDK HttpServer] API. It is recommended to use https://avaje.io/jex/[Avaje Jex] or https://avaje.io/http/[Avaje Http] for a higher level API.
+* Linux
+* Apache with mod_fcgid
+* GraalVM native-image. (Not strictly required, but highly recommended)
+
+=== Dependencies
+
+Include `org.ethelred.fcgi:httpserver:{revnumber}` as a runtime dependency.
+
+=== Deployment
+
+Build the application as a native image.
+Copy to your host.
+
+Configure with a `.htaccess` like this:
+
+[source,apache]
+----
+RewriteEngine On
+RewriteBase "/"
+
+# If the request is for an existing file or directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route /* requests to fcgi
+RewriteCond "%{REQUEST_URI}" !=/my-application.fcgi
+RewriteRule "^(.*)" "my-application.fcgi" [L,QSA]
+
+DirectoryIndex my-application.fcgi
+----
+
+== Limitations
+
+With this setup, the Java application does not manage its own lifecycle.
+Apache will start the application when it is needed to handle a request.
+
+* If running as *CGI*, a new process is started for each request, and ends as soon as it has been handled.
+* When running with *mod_fcgi*, a new process is started if one is not available.
+It may handle multiple requests in series, but will be terminated if idle.
+If Apache receives concurrent requests, more than one process may be started.
+
+The implementation ignores bind address and backlog.
+They are meaningless in this context.
+
+The implementation ignores HTTPS configuration. In practice, Apache or another layer will handle HTTPS.
+
+https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/httpserver/Authenticator.html[Authenticator] support has not been implemented.
+
+Filter support has not been implemented.
+
+The implementation allows setting a different `Executor`, but it probably shouldn't.
+
+== Why implement 1990's standards in 2026?
+
+It works on my shared hosting site (Dreamhost).
+It was an interesting challenge.
+
+_Yes, I could probably rent a VPS for not very much extra cost._
