@@ -56,6 +56,10 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
         coreService.serve(this);
     }
 
+    /**
+     * No-op. Unlike the standard {@link com.sun.net.httpserver.HttpsServer}, the executor here
+     * is fixed internally and cannot be overridden.
+     */
     @Override
     public void setExecutor(Executor executor) {
         coreService.setExecutor(executor);
