@@ -47,6 +47,8 @@ DirectoryIndex my-application.fcgi
 
 == Limitations
 
+=== Process Lifecycle
+
 With this setup, the Java application does not manage its own lifecycle.
 Apache will start the application when it is needed to handle a request.
 
@@ -55,16 +57,18 @@ Apache will start the application when it is needed to handle a request.
 It may handle multiple requests in series, but will be terminated if idle.
 If Apache receives concurrent requests, more than one process may be started.
 
-The implementation ignores bind address and backlog.
-They are meaningless in this context.
+=== Thread Model
 
-The implementation ignores HTTPS configuration. In practice, Apache or another layer will handle HTTPS.
-
-https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/httpserver/Authenticator.html[Authenticator] support has not been implemented.
-
-Filter support has not been implemented.
+Each FastCGI/CGI connection is dispatched to its own platform thread. Virtual threads are deliberately avoided as carriers here, since the implementation calls native functions for socket/IO handling, which block.
 
 Calling `setExecutor` has no effect. The executor is fixed internally to match the threading model each implementation relies on.
+
+=== Unsupported API
+
+* The implementation ignores bind address and backlog. They are meaningless in this context.
+* The implementation ignores HTTPS configuration. In practice, Apache or another layer will handle HTTPS.
+* https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/httpserver/Authenticator.html[Authenticator] support has not been implemented.
+* Filter support has not been implemented.
 
 == Why implement 1990's standards in 2026?
 
