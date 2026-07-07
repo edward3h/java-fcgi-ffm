@@ -2,7 +2,7 @@ plugins {
     application
     id("java-convention")
     id("graalvm-native-convention")
-    id("org.ethelred.kiwiproc") version "0.12"
+    id("org.ethelred.kiwiproc") version "1.0"
 }
 
 dependencies {
