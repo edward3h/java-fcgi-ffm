@@ -11,10 +11,13 @@ abstract sealed class BaseService implements Service permits CgiService, FcgiSer
 
     @Override
     public void setExecutor(Executor executor) {
-        this.executor = executor;
+        // No-op: the executor is fixed per implementation to match the threading
+        // model it relies on (see defaultExecutor() implementations). Overriding
+        // it risks reintroducing carrier-thread starvation or breaking the
+        // single-request-per-process model.
     }
 
-    protected Executor executor = defaultExecutor();
+    protected final Executor executor = defaultExecutor();
 
     protected abstract Executor defaultExecutor();
 }

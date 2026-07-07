@@ -64,7 +64,7 @@ https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/ht
 
 Filter support has not been implemented.
 
-The implementation allows setting a different `Executor`, but it probably shouldn't.
+Calling `setExecutor` has no effect. The executor is fixed internally to match the threading model each implementation relies on.
 
 == Why implement 1990's standards in 2026?
 
