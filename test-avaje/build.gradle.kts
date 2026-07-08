@@ -16,7 +16,7 @@ dependencies {
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
 
     annotationProcessor("io.avaje:avaje-inject-generator:12.6")
-    annotationProcessor("io.avaje:avaje-http-jex-generator:3.9")
+    annotationProcessor("io.avaje:avaje-http-jex-generator:3.10")
     annotationProcessor("io.avaje:avaje-jsonb-generator:3.14")
 
     runtimeOnly(project(":httpserver"))
