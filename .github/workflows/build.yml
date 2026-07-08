@@ -27,4 +27,8 @@ jobs:
         run: ./gradlew build
 
       - name: Integration tests
-        run: ./gradlew integrationTest
+        # test-jex and test-mysql are dependency subsets of test-avaje (which combines
+        # avaje-jex + avaje-inject + avaje-http + hikari + mysql-connector), so their
+        # native-image builds are skipped here to save CI time. Run them locally with
+        # ./gradlew :test-jex:integrationTest / :test-mysql:integrationTest when needed.
+        run: ./gradlew integrationTest -x :test-jex:integrationTest -x :test-mysql:integrationTest
