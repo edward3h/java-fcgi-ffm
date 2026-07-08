@@ -27,6 +27,7 @@ dependencies {
 rewrite {
     activeRecipe("red.ethel.fcgi.General")
     isExportDatatables = true
+    failOnDryRunResults = true
 }
 
 tasks.named("check") {
