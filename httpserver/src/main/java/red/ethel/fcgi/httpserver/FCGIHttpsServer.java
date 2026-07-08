@@ -1,6 +1,7 @@
 /* (C) Edward Harman 2026 */
 package red.ethel.fcgi.httpserver;
 
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpsConfigurator;
@@ -121,7 +122,7 @@ final class FCGIHttpsServer extends HttpsServer implements Handler {
         var context = path == null ? null : contextList.findContext(path);
         if (context != null && context.getHandler() != null) {
             try (var httpExchange = new FCGIHttpExchange(exchange, context)) {
-                context.getHandler().handle(httpExchange);
+                new Filter.Chain(context.getFilters(), context.getHandler()).doFilter(httpExchange);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

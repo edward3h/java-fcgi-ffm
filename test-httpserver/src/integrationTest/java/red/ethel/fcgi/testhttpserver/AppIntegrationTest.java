@@ -60,4 +60,20 @@ class AppIntegrationTest {
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("hello world");
     }
+
+    @Test
+    void filterAddsResponseHeader() throws Exception {
+        var request = HttpRequest.newBuilder(URI.create(baseUrl + "/foo")).build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("X-Filter")).hasValue("applied");
+    }
+
+    @Test
+    void filterCanShortCircuitHandler() throws Exception {
+        var request = HttpRequest.newBuilder(URI.create(baseUrl + "/blocked")).build();
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.body()).doesNotContain("Handler blocked");
+    }
 }
