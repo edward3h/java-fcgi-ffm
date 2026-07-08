@@ -68,7 +68,6 @@ Calling `setExecutor` has no effect. The executor is fixed internally to match t
 * The implementation ignores bind address and backlog. They are meaningless in this context.
 * The implementation ignores HTTPS configuration. In practice, Apache or another layer will handle HTTPS.
 * https://docs.oracle.com/en/java/javase/25/docs/api/jdk.httpserver/com/sun/net/httpserver/Authenticator.html[Authenticator] support has not been implemented.
-* Filter support has not been implemented.
 
 == Why implement 1990's standards in 2026?
 

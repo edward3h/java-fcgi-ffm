@@ -1,6 +1,7 @@
 /* (C) Edward Harman 2026 */
 package red.ethel.fcgi.testhttpserver;
 
+import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -18,7 +19,23 @@ public class App {
             LOGGER.info("Starting");
             var server = HttpServer.create();
             server.createContext("/", new MyHandler("root"));
-            server.createContext("/foo", new MyHandler("foo"));
+            server.createContext("/foo", new MyHandler("foo"))
+                    .getFilters()
+                    .add(Filter.beforeHandler("add-header", exchange -> exchange.getResponseHeaders()
+                            .add("X-Filter", "applied")));
+            server.createContext("/blocked", new MyHandler("blocked"))
+                    .getFilters()
+                    .add(new Filter() {
+                        @Override
+                        public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
+                            exchange.sendResponseHeaders(403, -1);
+                        }
+
+                        @Override
+                        public String description() {
+                            return "block";
+                        }
+                    });
             server.start();
             Runtime.getRuntime()
                     .addShutdownHook(Thread.ofVirtual().name("shutdown").unstarted(() -> server.stop(20)));
