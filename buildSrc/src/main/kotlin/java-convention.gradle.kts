@@ -27,7 +27,7 @@ tasks.named<JacocoReport>("jacocoTestReport") {
     }
 }
 
-val junitVersion = "6.1.1"
+val junitVersion = "6.1.2"
 dependencies {
     implementation("org.slf4j:slf4j-api:2.0.18")
     implementation("org.jspecify:jspecify:1.0.0")
