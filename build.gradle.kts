@@ -10,7 +10,7 @@ buildscript {
 
 plugins {
     base
-    id("org.openrewrite.rewrite") version "7.36.0"
+    id("org.openrewrite.rewrite") version "7.37.0"
 }
 
 repositories {
