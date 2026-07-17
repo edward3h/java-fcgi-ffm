@@ -17,7 +17,7 @@ dependencyResolutionManagement {
             library("rainbowgum-pattern", "io.jstach.rainbowgum", "rainbowgum-pattern").versionRef("rainbowgum")
             library("rainbowgum-all", "io.jstach.rainbowgum", "rainbowgum").versionRef("rainbowgum")
 
-            version("testcontainers", "1.21.4")
+            version("testcontainers", "2.0.5")
             library("testcontainers", "org.testcontainers", "testcontainers").versionRef("testcontainers")
             library("testcontainers-junit5", "org.testcontainers", "junit-jupiter").versionRef("testcontainers")
             library("testcontainers-mysql", "org.testcontainers", "mysql").versionRef("testcontainers")
