@@ -5,7 +5,7 @@ dependencyResolutionManagement {
             library("junit-api", "org.junit.jupiter", "junit-jupiter-api").versionRef("junit")
             library("junit-params", "org.junit.jupiter", "junit-jupiter-params").versionRef("junit")
 
-            library("jspecify", "org.jspecify:jspecify:1.0.0")
+            library("jspecify", "org.jspecify:jspecify:1.0.1")
             library("slf4j", "org.slf4j:slf4j-api:2.0.18")
 
             library("vanniktech-maven-publish", "com.vanniktech:gradle-maven-publish-plugin:0.37.0")
